@@ -3,7 +3,7 @@
 
 ## IMPORTANT LINKS - Implementation in Excalidraw
 - **Dual Writing:** [Excalidraw Diagram](https://excalidraw.com/#json=r7OP4hBLRxzCOs97lrErj,QlV0y5c-Ey67k_GSePj7hA)
-> **Note:** This is for small dataset. If our dataset had been much larger like billions his approach might not have been feasible. In that case, we might have had to use a **MapReduce job** to process the data at scale. We didn't use MapReduce job because I can't do it, or represent how it works with **MapReduce Job**.
+> **Note:** This is for small dataset. If our dataset had been much larger like billions like ours this approach might not have been feasible. In that case, we might have had to use a **MapReduce job** to process the data at scale. We didn't use MapReduce job because I can't do it, or represent how it works.
 - **Shadow Testing:** [Excalidraw Diagram](https://excalidraw.com/#json=_yIUesRlzcNZnDjcJtNd5,F8Yc4UjTC8cm0UhUvdJMXg)
 - **Changing Write Paths:** [Excalidraw Diagram](https://excalidraw.com/#json=KlukE-ge0h_0wSwb0ES4R,o6zNhzF6FbdgAX69od4x3g)
 ## Overview

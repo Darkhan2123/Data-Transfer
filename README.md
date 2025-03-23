@@ -341,14 +341,6 @@ def retain_recent_data(days_to_retain=7):
 4. **Resource Constraints**:
    - Solution: Controlled delays and batch processing to manage resource usage
 
-## Rollback Strategy
-
-If issues are discovered during validation:
-
-1. Keep the dual-write system active
-2. Switch reads back to the old database
-3. Fix any data inconsistencies in the new database
-4. Retry validation
 
 ## Conclusion
 

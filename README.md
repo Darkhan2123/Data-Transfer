@@ -1,6 +1,10 @@
 # Migration of Recommendation Table
 ![Diagram](./static/1_N-YIdbN2sibOf2dIZE6JhQ.webp)
 
+## IMPORTANK LINKS  implementation in excalidraw:
+![dual writing](https://excalidraw.com/#json=r7OP4hBLRxzCOs97lrErj,QlV0y5c-Ey67k_GSePj7hA)
+![shadow testing](https://excalidraw.com/#json=_yIUesRlzcNZnDjcJtNd5,F8Yc4UjTC8cm0UhUvdJMXg)
+![changing write paths](https://excalidraw.com/#json=KlukE-ge0h_0wSwb0ES4R,o6zNhzF6FbdgAX69od4x3g)
 ## Overview
 
 We have **one billion** existing records in our `recommendation` table that must be migrated from an old PostgreSQL database to a new PostgreSQL database. Additionally, we receive **200 million** new records daily, and we need a strategy to migrate this incremental data without causing downtime or data loss.

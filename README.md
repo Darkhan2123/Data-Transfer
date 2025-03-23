@@ -2,9 +2,10 @@
 ![Diagram](./static/1_N-YIdbN2sibOf2dIZE6JhQ.webp)
 
 ## IMPORTANT LINKS - Implementation in Excalidraw
-- **Dual Writing:** [Excalidraw Diagram](https://excalidraw.com/#json=UPDATED_DUAL_WRITING_LINK)
-- **Shadow Testing:** [Excalidraw Diagram](https://excalidraw.com/#json=UPDATED_SHADOW_TESTING_LINK)
-- **Changing Write Paths:** [Excalidraw Diagram](https://excalidraw.com/#json=UPDATED_CHANGING_WRITE_PATHS_LINK)
+- **Dual Writing:** [Excalidraw Diagram](https://excalidraw.com/#json=r7OP4hBLRxzCOs97lrErj,QlV0y5c-Ey67k_GSePj7hA)
+> **Note:** This is for small dataset. If our dataset had been much larger like billions his approach might not have been feasible. In that case, we might have had to use a **MapReduce job** to process the data at scale. We didn't use MapReduce job because I can't do it, or represent how it works with **MapReduce Job**.
+- **Shadow Testing:** [Excalidraw Diagram](https://excalidraw.com/#json=_yIUesRlzcNZnDjcJtNd5,F8Yc4UjTC8cm0UhUvdJMXg)
+- **Changing Write Paths:** [Excalidraw Diagram](https://excalidraw.com/#json=KlukE-ge0h_0wSwb0ES4R,o6zNhzF6FbdgAX69od4x3g)
 ## Overview
 
 We have **one billion** existing records in our `recommendation` table that must be migrated from an old PostgreSQL database to a new PostgreSQL database. Additionally, we receive **200 million** new records daily, and we need a strategy to migrate this incremental data without causing downtime or data loss.

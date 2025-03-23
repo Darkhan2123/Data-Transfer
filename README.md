@@ -1,5 +1,4 @@
 # Migration of Recommendation Table
-
 ![Diagram](./static/1_N-YIdbN2sibOf2dIZE6JhQ.webp)
 
 ## Overview
@@ -18,38 +17,23 @@ We have **one billion** existing records in our `recommendation` table that must
 
 > **Note:** We want the most recent data (e.g., last few loads) to remain available in the old database until the new system is fully validated.
 
----
-
-Migration of Recommendation Table
-Overview
-
-We have one billion existing records in our recommendation table that must be migrated from an old PostgreSQL database to a new PostgreSQL database. Additionally, we receive 200 million new records daily, and we need a strategy to migrate this incremental data without causing downtime or data loss.
-Table: recommendation
-
-Column Name	Description
-id	Primary key for the recommendation
-customer_id	Foreign key to the customer table
-products_id	Foreign key to the product table
-recommendation_date	Timestamp
-last_modified_date	Timestamp
-
-    Note: We want the most recent data (e.g., last few loads) to remain available in the old database until the new system is fully validated.
-
-Migration Strategy
+## Migration Strategy
 
 Our approach follows these key steps:
 
-    Dual Writes: From the moment you begin the migration, write new data to both the old and new recommendation tables.
-    Bulk Migrate Existing Data: Use timestamp-based chunking and multiple workers to gradually move the 1B existing rows to the new DB, verifying as you go.
-    Shadow Read and Validate: Compare reads from both databases. Once confident, switch all reads to the new table in stages.
-    Stop Writing to Old: After the new table is fully validated under real load, write exclusively to the new DB.
-    Clean Up: Once you're sure no system depends on the old table, archive or drop it.
+* **Dual Writes**: From the moment you begin the migration, write new data to both the old and new `recommendation` tables.
+* **Bulk Migrate Existing Data**: Use timestamp-based chunking and multiple workers to gradually move the 1B existing rows to the new DB, verifying as you go.
+* **Shadow Read and Validate**: Compare reads from both databases. Once confident, switch all reads to the new table in stages.
+* **Stop Writing to Old**: After the new table is fully validated under real load, write exclusively to the new DB.
+* **Clean Up**: Once you're sure no system depends on the old table, archive or drop it.
 
-Implementation
-1. Dual Write Implementation
+## Implementation
+
+### 1. Dual Write Implementation
 
 First, we implemented a service that writes to both databases simultaneously:
 
+```python
 class RecommendationService:
     def __init__(self, old_db_service, new_db_service):
         self.old_db_service = old_db_service
@@ -71,11 +55,13 @@ class RecommendationService:
         )
 
         return old_id
+```
 
+### 2. Historical Data Migration
 
-2. Historical Data Migration
 For the 1 billion existing records, we use timestamp-based chunking with multiple workers:
 
+```python
 from multiprocessing import Process
 from datetime import datetime, timedelta
 import time
@@ -111,9 +97,11 @@ def migrate_historical_data(start_date=None, end_date=None, batch_size=10000, wo
     # Wait for all processes to complete
     for p in processes:
         p.join()
+```
 
-The worker function that does the migration:
+The worker function that does the actual migration:
 
+```python
 def migrate_chunk(start_time, end_time, batch_size):
     """Migrate a specific chunk of time-based data"""
 
@@ -149,9 +137,11 @@ def migrate_chunk(start_time, end_time, batch_size):
 
         # Log progress
         print(f"Migrated records up to {current_time}")
+```
 
 Helper functions for dividing time ranges and chunking records:
 
+```python
 def divide_time_range(start_date, end_date, chunks):
     """Divide a time range into equal chunks"""
     total_seconds = (end_date - start_date).total_seconds()
@@ -171,10 +161,13 @@ def chunk_records(records, chunk_size):
     """Split records into smaller chunks for batch processing"""
     for i in range(0, len(records), chunk_size):
         yield records[i:i + chunk_size]
+```
 
-3. Data Verification
+### 3. Data Verification
+
 To ensure data consistency, we implemented verification processes:
 
+```python
 def verify_migration(sample_size=10000):
     """Verify that a random sample of records was migrated correctly"""
 
@@ -210,10 +203,13 @@ def records_match(record1, record2):
             record1.products_id == record2.products_id and
             record1.recommendation_date == record2.recommendation_date and
             record1.last_modified_date == record2.last_modified_date)
+```
 
-4. Shadow Testing and Switching Read Operations
+### 4. Shadow Testing and Switching Read Operations
+
 We implemented shadow testing to compare results from both databases:
 
+```python
 def shadow_test(test_queries, sample_size=100):
     """
     Run test queries against both databases and compare results
@@ -252,10 +248,12 @@ def shadow_test(test_queries, sample_size=100):
     print(f"Success rate: {success_rate:.2%}")
 
     return success_rate > 0.99  # Consider successful if 99% or more queries match
+```
 
-    After validation, we implement a configurable reader:
+After validation, we implement a configurable reader:
 
-    class RecommendationReader:
+```python
+class RecommendationReader:
     def __init__(self):
         self.use_new_db = get_migration_config('use_new_db_for_reads')
 
@@ -265,10 +263,13 @@ def shadow_test(test_queries, sample_size=100):
             return new_db.get_recommendations(customer_id, limit)
         else:
             return old_db.get_recommendations(customer_id, limit)
+```
 
-5. Switching Write Operations
+### 5. Switching Write Operations
+
 When we're confident everything is working well:
 
+```python
 class RecommendationService:
     def __init__(self, old_db_service, new_db_service):
         self.old_db_service = old_db_service
@@ -292,10 +293,13 @@ class RecommendationService:
         )
 
         return new_id if old_id is None else old_id
+```
 
-6. Recent Data Retention
+### 6. Recent Data Retention
+
 For the requirement to keep recent data available in the old system:
 
+```python
 def retain_recent_data(days_to_retain=7):
     """Make sure recent data is always in the old system"""
 
@@ -314,47 +318,42 @@ def retain_recent_data(days_to_retain=7):
     # Insert missing records to old DB
     for batch in chunk_records(missing_records, 1000):
         insert_batch_to_old_db(batch)
+```
 
-Tools and Technologies
+## Tools and Technologies
 
-PostgreSQL Native Tools: We leverage psycopg2 for Python connectivity to PostgreSQL
-Multiprocessing: For parallel data migration to speed up the process
-Configuration Management: Dynamic flags for controlling read/write behavior
-Monitoring and Logging: Integrated with our monitoring system to track progress and errors
+1. **PostgreSQL Native Tools**: We leverage `psycopg2` for Python connectivity to PostgreSQL
+2. **Multiprocessing**: For parallel data migration to speed up the process
+3. **Configuration Management**: Dynamic flags for controlling read/write behavior
+4. **Monitoring and Logging**: Integrated with our monitoring system to track progress and errors
 
-Challenges and Solutions
+## Challenges and Solutions
 
-High Data Volume:
+1. **High Data Volume**:
+   - Solution: Timestamp-based chunking and parallel processing
 
-Solution: Timestamp-based chunking and parallel processing
+2. **Zero Downtime Requirement**:
+   - Solution: Dual-write pattern and gradual read switchover
 
+3. **Data Consistency**:
+   - Solution: Comprehensive verification and shadow testing
 
-Zero Downtime Requirement:
+4. **Resource Constraints**:
+   - Solution: Controlled delays and batch processing to manage resource usage
 
-Solution: Dual-write pattern and gradual read switchover
+## Rollback Strategy
 
-
-Data Consistency:
-
-Solution: Comprehensive verification and shadow testing
-
-
-Resource Constraints:
-
-Solution: Controlled delays and batch processing to manage resource usage
-
-
-
-Rollback Strategy
 If issues are discovered during validation:
 
-Keep the dual-write system active
-Switch reads back to the old database
-Fix any data inconsistencies in the new database
-Retry validation
+1. Keep the dual-write system active
+2. Switch reads back to the old database
+3. Fix any data inconsistencies in the new database
+4. Retry validation
 
-Conclusion
+## Conclusion
+
 This migration strategy ensures zero downtime and prevents data loss while maintaining recent data availability in the old system until the migration is fully validated. The implementation details shown here provide a complete blueprint for handling large-scale PostgreSQL migrations.
-References
 
-Stripe Blog: Online Migrations
+## References
+
+1. [Stripe Blog: Online Migrations](https://stripe.com/blog/online-migrations)
